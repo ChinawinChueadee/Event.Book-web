@@ -8,6 +8,7 @@ import Login from "../pages/Login";
 import Home from "../pages/Home";
 import Profile from "../pages/Profile";
 import useUserStore from "../stores/userStore";
+import UserLayout from "../layouts/UserLayout";
 
 const guestRouter = createBrowserRouter([
   { path: "/", Component: Login },
@@ -16,12 +17,7 @@ const guestRouter = createBrowserRouter([
 const userRouter = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <>
-        <p className="py-4 border">Header</p>
-        <Outlet />
-      </>
-    ),
+    Component: UserLayout,
     children: [
       { path: "", Component: Home },
       { path: "profile", Component: Profile },
@@ -32,7 +28,7 @@ const userRouter = createBrowserRouter([
 function AppRouter() {
   const user = useUserStore((state) => state.user);
   const finalRouter = user ? userRouter : guestRouter;
-  return <RouterProvider key={user?.id} router={finalRouter} />;
+  return <RouterProvider key={user} router={finalRouter} />;
 }
 
 export default AppRouter;

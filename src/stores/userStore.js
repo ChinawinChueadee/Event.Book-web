@@ -14,10 +14,7 @@ const useUserStore = create(
       },
       logout: () => set({ user: null, token: "" }),
     }),
-    {
-      name: "authState",
-      storage: createJSONStorage(() => localStorage),
-    },
+    { name: "authState", storage: createJSONStorage(() => localStorage) },
   ),
 );
 

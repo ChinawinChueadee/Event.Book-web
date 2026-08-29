@@ -45,9 +45,9 @@ function Login() {
   const onLoginSubmit = async (data) => {
     try {
       const resp = await login(data);
-      toast(resp.data.message, {
-        type: "success",
-      });
+      // toast(resp.data.message, {
+      //   type: "success",
+      // });
       navigate("/");
     } catch (err) {
       console.error(err);
