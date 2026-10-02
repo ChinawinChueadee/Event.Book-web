@@ -7,16 +7,22 @@ import {
   loginSchema,
   registerSchema,
 } from "../validations/schema";
-import { useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import useUserStore from "../stores/userStore";
+import BrandLogo from "../components/BrandLogo";
 import { getErrorMessage } from "../utils/event";
 
 function Login() {
   const [tab, setTab] = useState("login");
   const navigate = useNavigate();
+  const location = useLocation();
+  const user = useUserStore((state) => state.user);
   const login = useUserStore((state) => state.login);
+  // หน้าที่ผู้ใช้พยายามเข้าก่อนถูกพามาหน้านี้ (จาก RequireAuth / ปุ่มจอง)
+  const from = location.state?.from || "/";
   // ---------- Login form ----------
   const {
     register: registerLogin,
@@ -62,7 +68,7 @@ function Login() {
   const onLoginSubmit = async (data) => {
     try {
       await login(data);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (err) {
       console.error(err);
       toast.error(getErrorMessage(err, err.message), {
@@ -106,6 +112,11 @@ function Login() {
     "block text-[10.5px] font-bold tracking-wider uppercase mb-1.5";
   const errorClass = "text-[10.5px] text-[#E8491D] font-semibold mt-1";
 
+  // ล็อกอินอยู่แล้ว → ไม่ต้องเห็นหน้านี้
+  if (user) {
+    return <Navigate to={from} replace />;
+  }
+
   return (
     <div className="bg-[#0d0d0d] min-h-screen w-full flex font-sans">
       <div className="w-full min-h-screen bg-[#F4F1EA] flex flex-col lg:flex-row">
@@ -113,10 +124,11 @@ function Login() {
         <div className="hidden lg:flex lg:w-1/2 bg-[#1A1A1A] text-[#F4F1EA] p-10 xl:p-16 flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="text-base">☰</span>
-              <span className="font-black text-[15px] tracking-wide uppercase">
-                Event.Book
-              </span>
+              <Link to="/" aria-label="Event.Book home">
+                <Link to="/" aria-label="Event.Book home">
+                  <BrandLogo />
+                </Link>
+              </Link>
             </div>
             <div className="mt-24 xl:mt-32">
               <p className="text-[#E8491D] font-black text-sm tracking-[0.2em] uppercase mb-5">
@@ -139,14 +151,24 @@ function Login() {
         {/* RIGHT SIDE */}
         <div className="w-full lg:w-1/2 bg-[#F4F1EA] flex flex-col min-h-screen">
           <div className="lg:hidden flex items-center gap-2.5 px-5 py-4 border-b border-[#1A1A1A]">
-            <span className="text-base">☰</span>
-            <span className="font-black text-[15px] tracking-wide uppercase">
-              Event.Book
-            </span>
+            <BrandLogo />
           </div>
 
           <div className="flex-1 flex flex-col justify-center">
             <div className="w-full max-w-md mx-auto px-6 sm:px-8 lg:px-0 py-8 lg:py-12">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-[#8A8578] hover:text-[#E8491D] mb-6"
+              >
+                <ArrowLeft size={14} strokeWidth={2.5} /> Back to events
+              </Link>
+
+              {location.state?.from && (
+                <div className="bg-white border border-[#1A1A1A] border-l-4 border-l-[#E8491D] px-4 py-3 mb-6 text-xs font-semibold">
+                  Please sign in to continue.
+                </div>
+              )}
+
               <h1 className="font-black text-[42px] sm:text-[48px] lg:text-[52px] leading-[0.95] tracking-tight uppercase mb-7">
                 {tab === "login" ? (
                   <>
@@ -269,8 +291,7 @@ function Login() {
                         ✓ Check your email
                       </p>
                       <p className="text-xs leading-5 text-[#4a463c]">
-                        {forgotResult.message} The link expires in 30
-                        minutes.
+                        {forgotResult.message} The link expires in 30 minutes.
                       </p>
                     </div>
                     {/* โหมด dev: API ส่งลิงก์กลับมาให้เพราะยังไม่มีระบบส่งอีเมล */}

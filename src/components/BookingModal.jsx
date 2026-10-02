@@ -1,12 +1,10 @@
 import React from "react";
+import { X } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { mainApi } from "../api/mainApi";
 import useUserStore from "../stores/userStore"; // ✅ เพิ่ม import
-import {
-  FALLBACK_IMAGE,
-  formatDate,
-  getErrorMessage,
-} from "../utils/event";
+import { FALLBACK_IMAGE, formatDate, getErrorMessage } from "../utils/event";
 
 function BookingModal({ event, onClose, onBookingChange, onDeleted }) {
   const currentUser = useUserStore((state) => state.user); // ✅ ดึง user ปัจจุบัน
@@ -30,21 +28,20 @@ function BookingModal({ event, onClose, onBookingChange, onDeleted }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const [checkingBooking, setCheckingBooking] = useState(true);
+  const navigate = useNavigate();
+  // เจ้าของ event / ผู้ที่ยังไม่ล็อกอิน ไม่ต้องเช็คการจองของตัวเอง
+  const needsBookingCheck = Boolean(currentUser) && !isOwner;
+  const [checkingBooking, setCheckingBooking] = useState(needsBookingCheck);
   const [myBooking, setMyBooking] = useState(null);
   const [cancelling, setCancelling] = useState(false);
 
   const [deleting, setDeleting] = useState(false); // ✅ state สำหรับลบ event
 
   useEffect(() => {
-    if (isOwner) {
-      setCheckingBooking(false); // เจ้าของ event ไม่ต้องเช็คว่าตัวเองจองไหม
-      return;
-    }
+    if (!needsBookingCheck) return;
 
     const checkExistingBooking = async () => {
       try {
-        setCheckingBooking(true);
         const resp = await mainApi.get("/bookings/me");
         const bookings = resp.data.data || resp.data;
         const existing = bookings.find(
@@ -59,9 +56,14 @@ function BookingModal({ event, onClose, onBookingChange, onDeleted }) {
     };
 
     checkExistingBooking();
-  }, [event.id, isOwner]);
+  }, [event.id, needsBookingCheck]);
 
   const handleConfirmBooking = async () => {
+    // ยังไม่ล็อกอิน → ไปหน้า Login แล้วกลับมาเปิด event นี้ต่อ
+    if (!currentUser) {
+      navigate("/login", { state: { from: `/?event=${event.id}` } });
+      return;
+    }
     setError("");
     setSubmitting(true);
     try {
@@ -146,7 +148,7 @@ function BookingModal({ event, onClose, onBookingChange, onDeleted }) {
               onClick={onClose}
               className="w-8 h-8 flex items-center justify-center border border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors"
             >
-              ✕
+              <X size={16} strokeWidth={2.5} />
             </button>
           </div>
         </div>

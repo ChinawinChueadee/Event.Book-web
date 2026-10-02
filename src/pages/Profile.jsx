@@ -199,8 +199,8 @@ function Profile() {
               </span>
             </div>
             <p className="text-xs leading-5 text-[#4a463c] mb-4">
-              This permanently removes your account, the events you host and
-              all of your bookings.
+              This permanently removes your account, the events you host and all
+              of your bookings.
             </p>
             <button
               type="button"

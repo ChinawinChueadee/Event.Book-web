@@ -1,14 +1,27 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import Header from "../components/Header";
 import AddEvent from "../components/AddEvent";
 import { useState } from "react";
+import useUserStore from "../stores/userStore";
 
 function UserLayout() {
   const [showAddEvent, setShowAddEvent] = useState(false);
   // เพิ่มค่าเมื่อมี event ใหม่ → หน้า Home / Host ที่ใช้ค่านี้จะ re-fetch
   const [eventsVersion, setEventsVersion] = useState(0);
-  const openAddEvent = () => setShowAddEvent(true);
+  const user = useUserStore((state) => state.user);
+  const navigate = useNavigate();
+  const location = useLocation();
+  // ยังไม่ล็อกอิน → ไปหน้า Login ก่อน แล้วกลับมาหน้าเดิม
+  const openAddEvent = () => {
+    if (!user) {
+      navigate("/login", {
+        state: { from: location.pathname + location.search },
+      });
+      return;
+    }
+    setShowAddEvent(true);
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F1EA] flex flex-col">

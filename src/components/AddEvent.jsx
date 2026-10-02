@@ -1,4 +1,5 @@
 import React from "react";
+import { X } from "lucide-react";
 import { useState } from "react";
 import { mainApi } from "../api/mainApi";
 import useCategories from "../hooks/useCategories";
@@ -120,7 +121,7 @@ function AddEvent({ event, onClose, onSaved }) {
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center border border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors"
           >
-            ✕
+            <X size={16} strokeWidth={2.5} />
           </button>
         </div>
 

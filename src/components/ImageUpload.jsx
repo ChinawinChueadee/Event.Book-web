@@ -1,4 +1,5 @@
 import React from "react";
+import { ImagePlus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { mainApi } from "../api/mainApi";
 import { getErrorMessage } from "../utils/event";
@@ -116,12 +117,14 @@ function ImageUpload({
             onClick={() => inputRef.current?.click()}
             className="w-full h-full flex flex-col items-center justify-center gap-1.5 text-center px-3 hover:bg-[#F4F1EA] transition-colors"
           >
-            <span className="text-2xl leading-none">＋</span>
+            <ImagePlus size={26} strokeWidth={1.75} />
             <span className="text-[11px] font-extrabold tracking-wider uppercase">
               Upload image
             </span>
             <span className="text-[10px] text-[#8A8578]">
-              {shape === "square" ? "JPG, PNG, WEBP" : "Click or drop · JPG, PNG, WEBP · max 5MB"}
+              {shape === "square"
+                ? "JPG, PNG, WEBP"
+                : "Click or drop · JPG, PNG, WEBP · max 5MB"}
             </span>
           </button>
         )}
