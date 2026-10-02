@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import useUserStore from "../stores/userStore";
 
@@ -6,6 +6,7 @@ function Header({ onAddEvent }) {
   const logout = useUserStore((state) => state.logout);
   const user = useUserStore((state) => state.user);
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -13,10 +14,19 @@ function Header({ onAddEvent }) {
   };
 
   return (
-    <div>
+    <header className="sticky top-0 z-10 bg-[#F4F1EA] border-b border-[#1A1A1A] text-[#1A1A1A]">
       {/* Top bar */}
-      <div className="flex  items-center gap-2.5 px-6 sm:px-8 lg:px-10 xl:px-14 py-4 border-b border-[#1A1A1A] fixed top-0 bg-[#F4F1EA] z-10 left-0 right-0">
-        <span className="text-base">☰</span>
+      <div className="flex items-center gap-2.5 px-6 sm:px-8 lg:px-10 xl:px-14 py-4">
+        {/* Menu toggle — ใช้เฉพาะจอเล็ก (lg ขึ้นไปมี nav แสดงอยู่แล้ว) */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          title="Menu"
+          className="lg:hidden w-8 h-8 -ml-1.5 flex items-center justify-center text-base"
+        >
+          {menuOpen ? "✕" : "☰"}
+        </button>
+        <span className="hidden lg:inline text-base">☰</span>
         <span className="font-black text-[15px] tracking-wide uppercase">
           Event.Book
         </span>
@@ -75,7 +85,28 @@ function Header({ onAddEvent }) {
           </button>
         </div>
       </div>
-    </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <nav className="lg:hidden border-t border-[#1A1A1A] px-6 sm:px-8 flex flex-col text-xs font-bold tracking-wider uppercase">
+          {user && (
+            <span className="sm:hidden py-3.5 border-b border-[#1A1A1A]/20 text-[#8A8578]">
+              {user.username || user.email}
+            </span>
+          )}
+          {["Discover", "Saved", "Tickets"].map((item) => (
+            <a
+              key={item}
+              href="#"
+              onClick={() => setMenuOpen(false)}
+              className="py-3.5 border-b border-[#1A1A1A]/20 last:border-b-0 hover:text-[#E8491D]"
+            >
+              {item}
+            </a>
+          ))}
+        </nav>
+      )}
+    </header>
   );
 }
 
