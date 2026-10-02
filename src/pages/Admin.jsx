@@ -84,7 +84,8 @@ function UsersTab() {
 
   const changeRole = async (user) => {
     const role = user.role === "ADMIN" ? "USER" : "ADMIN";
-    if (!window.confirm(`เปลี่ยน ${user.username} เป็น ${role} ใช่ไหม?`)) return;
+    if (!window.confirm(`เปลี่ยน ${user.username} เป็น ${role} ใช่ไหม?`))
+      return;
     setBusyId(user.id);
     try {
       await mainApi.patch(`/admin/users/${user.id}`, { role });
@@ -523,7 +524,9 @@ function CategoriesTab() {
                       type="text"
                       value={editName}
                       onChange={(e) => setEditName(e.target.value)}
-                      onKeyDown={(e) => e.key === "Escape" && setEditingId(null)}
+                      onKeyDown={(e) =>
+                        e.key === "Escape" && setEditingId(null)
+                      }
                       maxLength={50}
                       autoFocus
                       className={inputClass}

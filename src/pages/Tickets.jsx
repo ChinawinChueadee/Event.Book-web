@@ -33,7 +33,8 @@ function Tickets() {
   }, []);
 
   const handleCancel = async (booking) => {
-    if (!window.confirm(`ยกเลิกการจอง "${booking.event.title}" ใช่ไหม?`)) return;
+    if (!window.confirm(`ยกเลิกการจอง "${booking.event.title}" ใช่ไหม?`))
+      return;
     setCancellingId(booking.id);
     try {
       const resp = await mainApi.patch(`/bookings/${booking.id}/cancel`);
@@ -85,8 +86,7 @@ function Tickets() {
           {booking.event.title}
         </h3>
         <p className="text-xs font-semibold text-[#4a463c]">
-          {formatDate(booking.event.eventDate, true)} ·{" "}
-          {booking.event.location}
+          {formatDate(booking.event.eventDate, true)} · {booking.event.location}
         </p>
       </div>
       {!isPast && booking.status !== "CANCELLED" && (

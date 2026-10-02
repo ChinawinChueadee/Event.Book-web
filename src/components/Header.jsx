@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
+import { LogIn, Menu, Plus, Power, Search, X } from "lucide-react";
+import BrandLogo from "./BrandLogo";
 import useUserStore from "../stores/userStore";
 
 const navItems = [
@@ -43,16 +45,12 @@ function Header({ onAddEvent }) {
           type="button"
           onClick={() => setMenuOpen((open) => !open)}
           title="Menu"
-          className="lg:hidden w-8 h-8 -ml-1.5 flex items-center justify-center text-base"
+          className="lg:hidden w-9 h-9 -ml-2 flex items-center justify-center"
         >
-          {menuOpen ? "✕" : "☰"}
+          {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
-        <span className="hidden lg:inline text-base">☰</span>
-        <Link
-          to="/"
-          className="font-black text-[15px] tracking-wide uppercase"
-        >
-          Event.Book
+        <Link to="/" aria-label="Event.Book home">
+          <BrandLogo />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-xs font-bold tracking-wider uppercase ml-10">
@@ -78,9 +76,9 @@ function Header({ onAddEvent }) {
           <button
             type="button"
             onClick={onAddEvent}
-            className="hidden sm:flex items-center gap-1.5 bg-[#E8491D] text-white border border-[#1A1A1A] px-3.5 py-2 text-[11px] font-extrabold tracking-wider uppercase hover:bg-[#c73e17] transition-colors"
+            className="hidden sm:flex items-center gap-1.5 h-9 bg-[#E8491D] text-white border border-[#1A1A1A] px-3.5 text-[11px] font-extrabold tracking-wider uppercase hover:bg-[#c73e17] transition-colors"
           >
-            <span className="text-sm leading-none">+</span> Add Event
+            <Plus size={14} strokeWidth={3} /> Add Event
           </button>
 
           {/* Compact icon-only version for mobile */}
@@ -88,29 +86,40 @@ function Header({ onAddEvent }) {
             type="button"
             onClick={onAddEvent}
             title="Add Event"
-            className="sm:hidden w-8 h-8 flex items-center justify-center border border-[#1A1A1A] bg-[#E8491D] text-white"
+            className="sm:hidden w-9 h-9 flex items-center justify-center border border-[#1A1A1A] bg-[#E8491D] text-white"
           >
-            +
+            <Plus size={18} strokeWidth={2.5} />
           </button>
 
           <button
             type="button"
             onClick={handleSearch}
             title="Search events"
-            className="w-8 h-8 flex items-center justify-center border border-[#1A1A1A] hover:bg-white transition-colors"
+            className="w-9 h-9 flex items-center justify-center border border-[#1A1A1A] hover:bg-white transition-colors"
           >
-            🔍
+            <Search size={16} strokeWidth={2.5} />
           </button>
 
-          {/* Logout button */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            title="Logout"
-            className="w-8 h-8 flex items-center justify-center border border-[#1A1A1A] bg-[#1A1A1A] text-[#F4F1EA] hover:bg-[#E8491D] hover:border-[#E8491D] transition-colors"
-          >
-            ⏻
-          </button>
+          {user ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Logout"
+              className="w-9 h-9 flex items-center justify-center border border-[#1A1A1A] bg-[#1A1A1A] text-[#F4F1EA] hover:bg-[#E8491D] hover:border-[#E8491D] transition-colors"
+            >
+              <Power size={16} strokeWidth={2.5} />
+            </button>
+          ) : (
+            // ยังไม่ล็อกอิน → ปุ่ม Sign In แทน Logout
+            <Link
+              to="/login"
+              title="Sign In"
+              className="h-9 flex items-center gap-1.5 px-3 border border-[#1A1A1A] bg-[#1A1A1A] text-[#F4F1EA] text-[11px] font-extrabold tracking-wider uppercase hover:bg-[#E8491D] hover:border-[#E8491D] transition-colors"
+            >
+              <LogIn size={15} strokeWidth={2.5} />
+              <span className="hidden sm:inline">Sign In</span>
+            </Link>
+          )}
         </div>
       </div>
 

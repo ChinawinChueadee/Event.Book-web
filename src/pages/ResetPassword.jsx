@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import { resetPasswordSchema } from "../validations/schema";
 import { getErrorMessage } from "../utils/event";
+import BrandLogo from "../components/BrandLogo";
 
 // เปิดจากลิงก์ /reset-password?token=... ที่ได้จาก Forgot password
 function ResetPassword() {
@@ -33,7 +34,7 @@ function ResetPassword() {
         ...data,
       });
       toast.success(resp.data.message);
-      navigate("/");
+      navigate("/login");
     } catch (err) {
       console.error(err);
       setError(getErrorMessage(err, "ตั้งรหัสผ่านใหม่ไม่สำเร็จ"));
@@ -49,9 +50,8 @@ function ResetPassword() {
   return (
     <div className="min-h-screen bg-[#F4F1EA] text-[#1A1A1A] flex flex-col font-sans">
       <div className="flex items-center gap-2.5 px-6 sm:px-8 lg:px-10 xl:px-14 py-4 border-b border-[#1A1A1A]">
-        <span className="text-base">☰</span>
-        <Link to="/" className="font-black text-[15px] tracking-wide uppercase">
-          Event.Book
+        <Link to="/" aria-label="Event.Book home">
+          <BrandLogo />
         </Link>
       </div>
 
@@ -67,7 +67,7 @@ function ResetPassword() {
                 This reset link is missing its token. Please request a new one.
               </p>
               <Link
-                to="/"
+                to="/login"
                 className="block text-center w-full border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-white transition-colors"
               >
                 Back to Sign In
@@ -106,9 +106,7 @@ function ResetPassword() {
                   {...register("confirmPassword")}
                 />
                 {errors.confirmPassword && (
-                  <p className={errorClass}>
-                    {errors.confirmPassword.message}
-                  </p>
+                  <p className={errorClass}>{errors.confirmPassword.message}</p>
                 )}
               </div>
 
@@ -127,7 +125,7 @@ function ResetPassword() {
               </button>
 
               <p className="text-center text-xs mt-6">
-                <Link to="/" className="text-[#E8491D] font-bold">
+                <Link to="/login" className="text-[#E8491D] font-bold">
                   Back to Sign In
                 </Link>
               </p>
