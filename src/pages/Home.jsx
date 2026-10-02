@@ -1,11 +1,18 @@
 import React from "react";
 import { useState, useEffect } from "react";
+import { useOutletContext } from "react-router";
 import { mainApi } from "../api/mainApi";
 import BookingModal from "../components/BookingModal";
-
-const categories = ["ALL", "TECH", "MUSIC", "ART", "DESIGN", "TALKS"];
+import useCategories from "../hooks/useCategories";
+import {
+  FALLBACK_IMAGE,
+  formatDate,
+  getErrorMessage,
+} from "../utils/event";
 
 function Home() {
+  const { eventsVersion } = useOutletContext();
+  const categories = ["ALL", ...useCategories()];
   const [activeCategory, setActiveCategory] = useState("ALL");
   const [search, setSearch] = useState("");
 
@@ -13,24 +20,28 @@ function Home() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  // เพิ่มค่าเมื่อจอง/ยกเลิก เพื่อโหลดจำนวนที่นั่งใหม่
+  const [reloadKey, setReloadKey] = useState(0);
+  // อ่านจาก events ทุกครั้ง modal จะได้เห็นข้อมูลล่าสุดหลัง re-fetch
+  const selectedEvent = events.find((e) => e.id === selectedId);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        setLoading(true);
+        setError("");
         const resp = await mainApi.get("/events"); // ปรับ endpoint ให้ตรงกับที่มีจริง
         setEvents(resp.data.data || resp.data); // ปรับตามโครงสร้าง response จริง (data.data หรือ data ตรง ๆ)
       } catch (err) {
         console.error(err);
-        setError(err.response?.data?.message || "โหลดข้อมูลอีเวนต์ไม่สำเร็จ");
+        setError(getErrorMessage(err, "โหลดข้อมูลอีเวนต์ไม่สำเร็จ"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchEvents();
-  }, []); // ดึงข้อมูลครั้งเดียวตอน component mount
+  }, [eventsVersion, reloadKey]); // ดึงใหม่เมื่อมี event ใหม่ หรือมีการจอง/ยกเลิก
 
   // ---------- Filter ด้วย category + search ฝั่ง client ----------
   const filteredEvents = events.filter((event) => {
@@ -47,7 +58,7 @@ function Home() {
     "flex-1 bg-white px-4 py-3 text-xs tracking-wider uppercase outline-none placeholder:text-gray-400 border border-[#1A1A1A] border-r-0";
 
   return (
-    <div className="bg-[#F4F1EA] min-h-screen w-full font-sans text-[#1A1A1A]">
+    <main className="flex-1 bg-[#F4F1EA] w-full font-sans text-[#1A1A1A]">
       {/* Hero */}
       <div className="bg-[#1A1A1A] text-[#F4F1EA] border-b border-[#1A1A1A]">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-end px-6 sm:px-8 lg:px-10 xl:px-14 py-10 lg:py-16">
@@ -63,6 +74,7 @@ function Home() {
 
             <div className="flex max-w-md lg:ml-auto">
               <input
+                id="event-search"
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -124,22 +136,17 @@ function Home() {
             {filteredEvents.map((event) => (
               <button
                 key={event.id}
-                onClick={() => setSelectedEvent(event)}
+                onClick={() => setSelectedId(event.id)}
                 className="group flex flex-col text-left border-r border-b border-[#1A1A1A] bg-[#F4F1EA] hover:bg-white transition-colors"
               >
                 <div className="relative aspect-[4/3] overflow-hidden border-b border-[#1A1A1A]">
                   <img
-                    src={
-                      event.eventImage ||
-                      "https://via.placeholder.com/800x600?text=No+Image"
-                    }
+                    src={event.eventImage || FALLBACK_IMAGE}
                     alt={event.title}
                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                   />
                   <span className="absolute top-3 right-3 bg-white border border-[#1A1A1A] text-[10px] font-bold px-2 py-1 uppercase tracking-wide">
-                    {event.eventDate
-                      ? new Date(event.eventDate).toLocaleDateString()
-                      : ""}
+                    {formatDate(event.eventDate)}
                   </span>
                 </div>
 
@@ -165,32 +172,19 @@ function Home() {
         )}
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-[#1A1A1A]">
-        <div className="px-6 sm:px-8 lg:px-10 xl:px-14 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="font-black text-[13px] uppercase tracking-wide">
-            Event.Book
-          </div>
-          <div className="flex gap-5 text-[10.5px] font-semibold tracking-wider uppercase text-[#4a463c]">
-            <span>Terms</span> <span>Privacy</span> <span>Contact</span>
-          </div>
-        </div>
-      </footer>
 
       {/* ✅ Modal แสดงรายละเอียด + ปุ่มจอง */}
       {selectedEvent && (
         <BookingModal
           event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          onBooked={() => {
-            // ถ้าต้องการ refresh รายการ event หลังจองสำเร็จ ทำได้ที่นี่
-          }}
+          onClose={() => setSelectedId(null)}
+          onBookingChange={() => setReloadKey((k) => k + 1)}
           onDeleted={(deletedId) => {
             setEvents((prev) => prev.filter((e) => e.id !== deletedId)); // ✅ เอา event ที่ลบออกจาก state ทันที
           }}
         />
       )}
-    </div>
+    </main>
   );
 }
 

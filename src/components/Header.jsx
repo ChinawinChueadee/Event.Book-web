@@ -1,16 +1,37 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, NavLink, useNavigate } from "react-router";
 import useUserStore from "../stores/userStore";
+
+const navItems = [
+  { to: "/", label: "Discover" },
+  { to: "/tickets", label: "My Tickets" },
+  { to: "/host", label: "Hosting" },
+  { to: "/profile", label: "Profile" },
+];
+
+const navClass = ({ isActive }) =>
+  isActive ? "text-[#E8491D]" : "hover:text-[#E8491D]";
 
 function Header({ onAddEvent }) {
   const logout = useUserStore((state) => state.logout);
   const user = useUserStore((state) => state.user);
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const links =
+    user?.role === "ADMIN"
+      ? [...navItems, { to: "/admin", label: "Admin" }]
+      : navItems;
 
   const handleLogout = () => {
     logout();
     navigate("/");
+  };
+
+  // ไปหน้า Discover แล้วโฟกัสช่องค้นหา
+  const handleSearch = () => {
+    setMenuOpen(false);
+    navigate("/");
+    setTimeout(() => document.getElementById("event-search")?.focus(), 0);
   };
 
   return (
@@ -27,28 +48,30 @@ function Header({ onAddEvent }) {
           {menuOpen ? "✕" : "☰"}
         </button>
         <span className="hidden lg:inline text-base">☰</span>
-        <span className="font-black text-[15px] tracking-wide uppercase">
+        <Link
+          to="/"
+          className="font-black text-[15px] tracking-wide uppercase"
+        >
           Event.Book
-        </span>
+        </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-xs font-bold tracking-wider uppercase ml-10">
-          <a href="#" className="hover:text-[#E8491D]">
-            Discover
-          </a>
-          <a href="#" className="hover:text-[#E8491D]">
-            Saved
-          </a>
-          <a href="#" className="hover:text-[#E8491D]">
-            Tickets
-          </a>
+          {links.map((item) => (
+            <NavLink key={item.to} to={item.to} end className={navClass}>
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="ml-auto flex items-center gap-3">
           {/* Username — hidden on small screens to save space */}
           {user && (
-            <span className="hidden sm:inline text-[11px] font-bold tracking-wide uppercase text-[#4a463c]">
+            <Link
+              to="/profile"
+              className="hidden sm:inline text-[11px] font-bold tracking-wide uppercase text-[#4a463c] hover:text-[#E8491D]"
+            >
               {user.username || user.email}
-            </span>
+            </Link>
           )}
 
           {/* Add Event button */}
@@ -70,7 +93,12 @@ function Header({ onAddEvent }) {
             +
           </button>
 
-          <button className="w-8 h-8 flex items-center justify-center border border-[#1A1A1A]">
+          <button
+            type="button"
+            onClick={handleSearch}
+            title="Search events"
+            className="w-8 h-8 flex items-center justify-center border border-[#1A1A1A] hover:bg-white transition-colors"
+          >
             🔍
           </button>
 
@@ -94,15 +122,18 @@ function Header({ onAddEvent }) {
               {user.username || user.email}
             </span>
           )}
-          {["Discover", "Saved", "Tickets"].map((item) => (
-            <a
-              key={item}
-              href="#"
+          {links.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end
               onClick={() => setMenuOpen(false)}
-              className="py-3.5 border-b border-[#1A1A1A]/20 last:border-b-0 hover:text-[#E8491D]"
+              className={(state) =>
+                `py-3.5 border-b border-[#1A1A1A]/20 last:border-b-0 ${navClass(state)}`
+              }
             >
-              {item}
-            </a>
+              {item.label}
+            </NavLink>
           ))}
         </nav>
       )}
