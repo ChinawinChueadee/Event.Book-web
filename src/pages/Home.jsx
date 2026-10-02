@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { mainApi } from "../api/mainApi";
 import BookingModal from "../components/BookingModal";
 
-const categories = ["All", "TECH", "MUSIC", "ART", "DESIGN", "TALKS"];
+const categories = ["ALL", "TECH", "MUSIC", "ART", "DESIGN", "TALKS"];
 
 function Home() {
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("ALL");
   const [search, setSearch] = useState("");
 
   // ---------- Events state ----------
@@ -35,7 +35,7 @@ function Home() {
   // ---------- Filter ด้วย category + search ฝั่ง client ----------
   const filteredEvents = events.filter((event) => {
     const matchCategory =
-      activeCategory === "All" ||
+      activeCategory === "ALL" ||
       event.category?.toUpperCase() === activeCategory;
     const matchSearch = event.title
       ?.toLowerCase()
@@ -49,14 +49,14 @@ function Home() {
   return (
     <div className="bg-[#F4F1EA] min-h-screen w-full font-sans text-[#1A1A1A]">
       {/* Hero */}
-      <div className="px-6 sm:px-8 lg:px-10 xl:px-14 pt-10 lg:pt-16 pb-10 border-b border-[#1A1A1A]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-end max-w-[1400px] mx-auto">
+      <div className="bg-[#1A1A1A] text-[#F4F1EA] border-b border-[#1A1A1A]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-end px-6 sm:px-8 lg:px-10 xl:px-14 py-10 lg:py-16">
           <h1 className="font-black text-[42px] sm:text-[52px] lg:text-[64px] xl:text-[76px] leading-[0.95] lg:leading-[0.9] tracking-tight uppercase mb-0">
             Find <br /> Your Next <br /> Event
           </h1>
 
           <div>
-            <p className="text-sm leading-6 text-[#4a463c] mb-6 max-w-md lg:ml-auto">
+            <p className="text-sm leading-6 text-[#E8491D] mb-6 max-w-md lg:ml-auto">
               Discover cozy festivals, craft workshops, and epic quests in your
               area. Curated events for the discerning attendee.
             </p>
@@ -69,7 +69,7 @@ function Home() {
                 placeholder="SEARCH EVENTS, ARTISTS, VENUES..."
                 className={inputClass}
               />
-              <button className="w-12 flex items-center justify-center bg-[#1A1A1A] text-[#F4F1EA] border border-[#1A1A1A]">
+              <button className="w-12 flex items-center justify-center bg-[#E8491D] text-[#F4F1EA] border border-[#E8491D] hover:bg-[#c73e17] transition-colors">
                 🔍
               </button>
             </div>
@@ -78,9 +78,9 @@ function Home() {
       </div>
 
       {/* Category filters */}
-      <div className="px-6 sm:px-8 lg:px-10 xl:px-14 max-w-[1400px] mx-auto">
-        <div className="flex items-center justify-between gap-4 py-5">
-          <div className="flex gap-8 text-sm font-extrabold tracking-wider uppercase overflow-x-auto">
+      <div className="px-6 sm:px-8 lg:px-10 xl:px-14">
+        <div className="flex items-center justify-between gap-4 pt-6 sm:pt-8 pb-5 sm:pb-6">
+          <div className="flex gap-6 sm:gap-8 text-sm font-extrabold tracking-wider uppercase overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -100,7 +100,7 @@ function Home() {
       </div>
 
       {/* Event grid */}
-      <div className="px-6 sm:px-8 lg:px-10 xl:px-14 pb-16 lg:pb-20 max-w-[1400px] mx-auto">
+      <div className="px-6 sm:px-8 lg:px-10 xl:px-14 pb-16 lg:pb-20">
         {loading && (
           <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center">
             Loading events...
@@ -120,14 +120,14 @@ function Home() {
         )}
 
         {!loading && !error && filteredEvents.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 border-t border-l border-[#1A1A1A]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 border-t border-l border-[#1A1A1A]">
             {filteredEvents.map((event) => (
               <button
                 key={event.id}
                 onClick={() => setSelectedEvent(event)}
-                className="group border-r border-b border-[#1A1A1A] bg-[#F4F1EA] hover:bg-white transition-colors"
+                className="group flex flex-col text-left border-r border-b border-[#1A1A1A] bg-[#F4F1EA] hover:bg-white transition-colors"
               >
-                <div className="relative aspect-[4/3] overflow-hidden border-b border-[#c77f7f]">
+                <div className="relative aspect-[4/3] overflow-hidden border-b border-[#1A1A1A]">
                   <img
                     src={
                       event.eventImage ||
@@ -143,15 +143,15 @@ function Home() {
                   </span>
                 </div>
 
-                <div className="p-5">
+                <div className="p-5 flex flex-col flex-1">
                   <p className="text-[10px] font-bold tracking-widest uppercase text-[#8A8578] mb-2">
                     {event.category}
                   </p>
                   <h3 className="font-black text-lg lg:text-xl leading-tight uppercase mb-4">
                     {event.title}
                   </h3>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[#4a463c]">
+                  <div className="mt-auto flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold text-[#4a463c] truncate">
                       {event.location}
                     </span>
                     <span className="text-[#E8491D] text-lg group-hover:translate-x-1 transition-transform inline-block">
@@ -166,12 +166,14 @@ function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-[#1A1A1A] px-6 sm:px-8 lg:px-10 xl:px-14 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-        <div className="font-black text-[13px] uppercase tracking-wide">
-          Event.Book
-        </div>
-        <div className="flex gap-3.5 text-[9.5px] font-semibold tracking-wide uppercase">
-          <span>Terms</span> <span>Privacy</span> <span>Contact</span>
+      <footer className="border-t border-[#1A1A1A]">
+        <div className="px-6 sm:px-8 lg:px-10 xl:px-14 py-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div className="font-black text-[13px] uppercase tracking-wide">
+            Event.Book
+          </div>
+          <div className="flex gap-5 text-[10.5px] font-semibold tracking-wider uppercase text-[#4a463c]">
+            <span>Terms</span> <span>Privacy</span> <span>Contact</span>
+          </div>
         </div>
       </footer>
 

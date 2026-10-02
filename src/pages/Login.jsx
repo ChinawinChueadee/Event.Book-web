@@ -97,8 +97,8 @@ function Login() {
         <div className="hidden lg:flex lg:w-1/2 bg-[#1A1A1A] text-[#F4F1EA] p-10 xl:p-16 flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="text-lg">☰</span>
-              <span className="font-black text-lg tracking-wide uppercase">
+              <span className="text-base">☰</span>
+              <span className="font-black text-[15px] tracking-wide uppercase">
                 Event.Book
               </span>
             </div>
@@ -226,7 +226,7 @@ function Login() {
                   </button>
 
                   <p className="text-center text-xs mt-6">
-                    Don't have an account?
+                    Don't have an account?{" "}
                     <button
                       type="button"
                       onClick={() => setTab("register")}
@@ -320,8 +320,8 @@ function Login() {
                   >
                     Create Account
                   </button>
-                  <p className="text-center text-xs mt-5">
-                    Already registered?
+                  <p className="text-center text-xs mt-6">
+                    Already registered?{" "}
                     <button
                       type="button"
                       onClick={() => setTab("login")}
@@ -335,11 +335,11 @@ function Login() {
             </div>
           </div>
 
-          <footer className="border-t border-[#1A1A1A] px-6 sm:px-8 lg:px-10 xl:px-14 py-4 flex justify-between items-center">
+          <footer className="border-t border-[#1A1A1A] px-6 sm:px-8 lg:px-10 xl:px-16 py-5 flex justify-between items-center">
             <div className="font-black text-[13px] uppercase tracking-wide">
               Event.Book
             </div>
-            <div className="flex gap-3.5 text-[9.5px] font-semibold tracking-wide uppercase">
+            <div className="flex gap-5 text-[10.5px] font-semibold tracking-wider uppercase text-[#4a463c]">
               <span>Terms</span> <span>Privacy</span> <span>Contact</span>
             </div>
           </footer>
