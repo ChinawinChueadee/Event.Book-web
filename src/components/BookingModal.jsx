@@ -2,10 +2,29 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { mainApi } from "../api/mainApi";
 import useUserStore from "../stores/userStore"; // ✅ เพิ่ม import
+import {
+  FALLBACK_IMAGE,
+  formatDate,
+  getErrorMessage,
+} from "../utils/event";
 
-function BookingModal({ event, onClose, onBooked, onDeleted }) {
+function BookingModal({ event, onClose, onBookingChange, onDeleted }) {
   const currentUser = useUserStore((state) => state.user); // ✅ ดึง user ปัจจุบัน
   const isOwner = currentUser?.id === event.userId; // ✅ เช็คว่าเป็นเจ้าของ event ไหม
+  const canDelete = isOwner || currentUser?.role === "ADMIN"; // admin ลบได้ทุก event
+
+  // ที่นั่ง: _count.bookings = จำนวนที่จองอยู่ (ไม่นับที่ยกเลิก)
+  const booked = event._count?.bookings ?? 0;
+  const seatsLeft = Math.max(event.capacity - booked, 0);
+  const isPast = new Date(event.eventDate) <= new Date();
+  const bookingBlockedReason =
+    event.status !== "OPEN"
+      ? `Event is ${event.status.toLowerCase()}`
+      : isPast
+        ? "Event has already started"
+        : seatsLeft === 0
+          ? "Event is full"
+          : "";
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -50,10 +69,10 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
       const newBooking = resp.data.data || resp.data;
       setMyBooking(newBooking);
       setSuccess(true);
-      onBooked?.(newBooking);
+      onBookingChange?.(newBooking);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "จองอีเวนต์ไม่สำเร็จ");
+      setError(getErrorMessage(err, "จองอีเวนต์ไม่สำเร็จ"));
     } finally {
       setSubmitting(false);
     }
@@ -66,9 +85,10 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
       await mainApi.patch(`/bookings/${myBooking.id}/cancel`);
       setMyBooking(null);
       setSuccess(false);
+      onBookingChange?.(null);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "ยกเลิกการจองไม่สำเร็จ");
+      setError(getErrorMessage(err, "ยกเลิกการจองไม่สำเร็จ"));
     } finally {
       setCancelling(false);
     }
@@ -89,7 +109,7 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
       onClose();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "ลบอีเวนต์ไม่สำเร็จ");
+      setError(getErrorMessage(err, "ลบอีเวนต์ไม่สำเร็จ"));
     } finally {
       setDeleting(false);
     }
@@ -109,8 +129,8 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
             Event Details
           </h2>
           <div className="flex items-center gap-2">
-            {/* ✅ ปุ่มลบ — โชว์เฉพาะเจ้าของ event */}
-            {isOwner && (
+            {/* ✅ ปุ่มลบ — โชว์เฉพาะเจ้าของ event หรือ admin */}
+            {canDelete && (
               <button
                 type="button"
                 onClick={handleDeleteEvent}
@@ -133,17 +153,22 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
 
         <div className="relative aspect-[16/9] overflow-hidden border-b border-[#1A1A1A]">
           <img
-            src={
-              event.eventImage ||
-              "https://via.placeholder.com/800x450?text=No+Image"
-            }
+            src={event.eventImage || FALLBACK_IMAGE}
             alt={event.title}
             className="w-full h-full object-cover"
           />
 
           {myBooking && (
-            <span className="absolute top-3 right-3 bg-[#1A1A1A] text-white text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-wide">
-              ✓ You're Going
+            <span
+              className={`absolute top-3 right-3 text-[10px] font-bold px-2.5 py-1.5 uppercase tracking-wide border ${
+                myBooking.status === "CONFIRMED"
+                  ? "bg-[#1A1A1A] text-white border-[#1A1A1A]"
+                  : "bg-white text-[#1A1A1A] border-[#1A1A1A]"
+              }`}
+            >
+              {myBooking.status === "CONFIRMED"
+                ? "✓ You're Going"
+                : "⏳ Pending"}
             </span>
           )}
 
@@ -164,11 +189,17 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
           </h3>
 
           {event.user && (
-            <p className="text-xs font-semibold text-[#4a463c] mb-4 flex items-center gap-1.5">
+            <p className="text-xs font-semibold text-[#4a463c] mb-3 flex items-center gap-1.5">
               <span className="text-[#8A8578]">Organized by</span>
               <span className="font-bold text-[#1A1A1A]">
                 {event.user.username || event.user.email}
               </span>
+            </p>
+          )}
+
+          {event.description && (
+            <p className="text-sm leading-6 text-[#4a463c] mb-5 whitespace-pre-line">
+              {event.description}
             </p>
           )}
 
@@ -178,9 +209,7 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
                 Date
               </p>
               <p className="font-semibold">
-                {event.eventDate
-                  ? new Date(event.eventDate).toLocaleString()
-                  : "-"}
+                {formatDate(event.eventDate, true)}
               </p>
             </div>
             <div>
@@ -191,9 +220,14 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
             </div>
             <div>
               <p className="text-[10px] font-bold tracking-widest uppercase text-[#8A8578] mb-1">
-                Capacity
+                Seats
               </p>
-              <p className="font-semibold">{event.capacity}</p>
+              <p className="font-semibold">
+                {seatsLeft} left{" "}
+                <span className="text-[#8A8578] font-medium">
+                  / {event.capacity}
+                </span>
+              </p>
             </div>
             <div>
               <p className="text-[10px] font-bold tracking-widest uppercase text-[#8A8578] mb-1">
@@ -224,8 +258,11 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
             </p>
           ) : success ? (
             <div className="text-center py-2">
-              <p className="font-black text-lg uppercase mb-4">
-                🎉 Booking Confirmed!
+              <p className="font-black text-lg uppercase mb-1">
+                🎉 Request Sent!
+              </p>
+              <p className="text-xs font-semibold text-[#8A8578] mb-4">
+                Waiting for the host to confirm your booking.
               </p>
               <button
                 type="button"
@@ -238,9 +275,13 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
           ) : myBooking ? (
             <div>
               <div className="flex items-center gap-2 mb-4 bg-white border border-[#1A1A1A] px-4 py-3">
-                <span className="text-[#1A1A1A]">✓</span>
+                <span className="text-[#1A1A1A]">
+                  {myBooking.status === "CONFIRMED" ? "✓" : "⏳"}
+                </span>
                 <span className="text-xs font-bold uppercase tracking-wide">
-                  You've already booked this event
+                  {myBooking.status === "CONFIRMED"
+                    ? "Your booking is confirmed"
+                    : "Booked — waiting for host confirmation"}
                 </span>
               </div>
               <div className="flex gap-3">
@@ -266,10 +307,11 @@ function BookingModal({ event, onClose, onBooked, onDeleted }) {
               <button
                 type="button"
                 onClick={handleConfirmBooking}
-                disabled={submitting}
+                disabled={submitting || Boolean(bookingBlockedReason)}
                 className="flex-1 bg-[#E8491D] text-white border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-3.5 hover:bg-[#c73e17] transition-colors disabled:opacity-50"
               >
-                {submitting ? "Booking..." : "Confirm Booking"}
+                {bookingBlockedReason ||
+                  (submitting ? "Booking..." : "Book Now")}
               </button>
               <button
                 type="button"

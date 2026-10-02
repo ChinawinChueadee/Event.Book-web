@@ -2,15 +2,19 @@ import React from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, registerSchema } from "../validations/schema";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+} from "../validations/schema";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import useUserStore from "../stores/userStore";
+import { getErrorMessage } from "../utils/event";
 
 function Login() {
   const [tab, setTab] = useState("login");
-  const [plan, setPlan] = useState("standard");
   const navigate = useNavigate();
   const login = useUserStore((state) => state.login);
   // ---------- Login form ----------
@@ -22,8 +26,21 @@ function Login() {
   } = useForm({
     resolver: zodResolver(loginSchema),
     mode: "onSubmit",
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", remember: false },
   });
+
+  // ---------- Forgot password form ----------
+  const {
+    register: registerForgot,
+    handleSubmit: handleSubmitForgot,
+    formState: { errors: forgotErrors, isSubmitting: forgotSubmitting },
+  } = useForm({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onSubmit",
+    defaultValues: { email: "" },
+  });
+  // { message, resetUrl? } หลังส่งคำขอสำเร็จ
+  const [forgotResult, setForgotResult] = useState(null);
 
   // ---------- Register form ----------
   const {
@@ -44,44 +61,43 @@ function Login() {
 
   const onLoginSubmit = async (data) => {
     try {
-      const resp = await login(data);
-      // toast(resp.data.message, {
-      //   type: "success",
-      // });
+      await login(data);
       navigate("/");
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || err.message, {
+      toast.error(getErrorMessage(err, err.message), {
         position: "top-center",
       });
     }
   };
 
   const onRegisterSubmit = async (data) => {
-    console.log(data, "data");
     try {
       const resp = await mainApi.post("/auth/register", data);
-      toast(resp.data.message, {
-        type: "success",
-      });
+      toast.success(`${resp.data.message} — please sign in`);
+      // สมัครเสร็จ → ไปแท็บ Login พร้อมกรอกอีเมลให้
+      resetRegister();
+      resetLogin({ email: data.email, password: "" });
+      setTab("login");
     } catch (err) {
       console.error(err);
-      toast(err.response?.data?.message, {
-        type: "error",
-      });
+      toast.error(getErrorMessage(err, "สมัครสมาชิกไม่สำเร็จ"));
     }
   };
-  const onSubmit = async (data) => {
+
+  const onForgotSubmit = async (data) => {
     try {
-      const resp = await axios.post(
-        "http://localhost:5005/auth/register",
-        data,
-      );
-      alert(JSON.stringify(resp.data, null, 2));
+      const resp = await mainApi.post("/auth/forgot-password", data);
+      setForgotResult(resp.data);
     } catch (err) {
       console.error(err);
-      alert(JSON.stringify(err, null, 2));
+      toast.error(getErrorMessage(err, "ส่งคำขอรีเซ็ตรหัสผ่านไม่สำเร็จ"));
     }
+  };
+
+  const openForgot = () => {
+    setForgotResult(null);
+    setTab("forgot");
   };
 
   const inputClass =
@@ -136,9 +152,13 @@ function Login() {
                   <>
                     Access <br /> Account
                   </>
-                ) : (
+                ) : tab === "register" ? (
                   <>
                     Create <br /> Account
+                  </>
+                ) : (
+                  <>
+                    Reset <br /> Password
                   </>
                 )}
               </h1>
@@ -203,19 +223,21 @@ function Login() {
                   </div>
 
                   <div className="flex justify-between items-center text-[11.5px] mb-6">
-                    <label className="flex items-center gap-1.5 font-semibold">
+                    <label className="flex items-center gap-1.5 font-semibold cursor-pointer">
                       <input
                         type="checkbox"
                         className="w-3.5 h-3.5 accent-[#1A1A1A]"
+                        {...registerLogin("remember")}
                       />
                       Remember me
                     </label>
-                    <a
-                      href="#"
-                      className="text-[#E8491D] font-bold no-underline"
+                    <button
+                      type="button"
+                      onClick={openForgot}
+                      className="text-[#E8491D] font-bold"
                     >
                       Forgot password?
-                    </a>
+                    </button>
                   </div>
 
                   <button
@@ -237,6 +259,83 @@ function Login() {
                   </p>
                 </form>
               )}
+
+              {/* FORGOT PASSWORD */}
+              {tab === "forgot" &&
+                (forgotResult ? (
+                  <div>
+                    <div className="bg-white border border-[#1A1A1A] px-4 py-4 mb-6">
+                      <p className="text-xs font-bold uppercase tracking-wide mb-1">
+                        ✓ Check your email
+                      </p>
+                      <p className="text-xs leading-5 text-[#4a463c]">
+                        {forgotResult.message} The link expires in 30
+                        minutes.
+                      </p>
+                    </div>
+                    {/* โหมด dev: API ส่งลิงก์กลับมาให้เพราะยังไม่มีระบบส่งอีเมล */}
+                    {forgotResult.resetUrl && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const url = new URL(forgotResult.resetUrl);
+                          navigate(url.pathname + url.search);
+                        }}
+                        className="w-full border border-dashed border-[#E8491D] text-[#E8491D] font-extrabold text-[11px] tracking-wider uppercase py-3 mb-4 hover:bg-[#E8491D] hover:text-white transition-colors"
+                      >
+                        Dev: open reset link
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setTab("login")}
+                      className="w-full border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-white transition-colors"
+                    >
+                      Back to Sign In
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={handleSubmitForgot(onForgotSubmit)}
+                    noValidate
+                  >
+                    <p className="text-xs leading-5 text-[#4a463c] mb-5">
+                      Enter the email you registered with and we'll send you a
+                      link to set a new password.
+                    </p>
+                    <div className="mb-6">
+                      <label className={labelClass}>Email Address</label>
+                      <input
+                        type="email"
+                        placeholder="Enter email address"
+                        className={inputClass}
+                        {...registerForgot("email")}
+                      />
+                      {forgotErrors.email && (
+                        <p className={errorClass}>
+                          {forgotErrors.email.message}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={forgotSubmitting}
+                      className="w-full bg-[#E8491D] text-white border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-[#c73e17] transition-colors disabled:opacity-50"
+                    >
+                      {forgotSubmitting ? "Sending..." : "Send Reset Link"}
+                    </button>
+                    <p className="text-center text-xs mt-6">
+                      Remembered it?{" "}
+                      <button
+                        type="button"
+                        onClick={() => setTab("login")}
+                        className="text-[#E8491D] font-bold"
+                      >
+                        Sign in
+                      </button>
+                    </p>
+                  </form>
+                ))}
 
               {/* REGISTER FORM */}
               {tab === "register" && (
