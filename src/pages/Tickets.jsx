@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import PageHeader from "../components/PageHeader";
+import { ListSkeleton } from "../components/Skeleton";
 import {
   FALLBACK_IMAGE,
   bookingStatusClass,
@@ -116,9 +117,9 @@ function Tickets() {
 
       <div className="px-6 sm:px-8 lg:px-10 xl:px-14 pb-16">
         {loading && (
-          <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center">
-            Loading bookings...
-          </p>
+          <div className="mt-8">
+            <ListSkeleton rows={3} withImage />
+          </div>
         )}
         {!loading && error && (
           <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center text-[#E8491D]">

@@ -2,3 +2,13 @@
 @plugin "daisyui" {
   themes: light --default
 }
+
+/* หลอดโหลดแบบวิ่งซ้ำ (ใช้ในกล่อง "Waking up the server…") */
+@keyframes wake-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}

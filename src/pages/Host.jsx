@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import AddEvent from "../components/AddEvent";
 import PageHeader from "../components/PageHeader";
+import { ListSkeleton, SkeletonBlock } from "../components/Skeleton";
 import {
   FALLBACK_IMAGE,
   bookingStatusClass,
@@ -61,9 +62,10 @@ function EventBookings({ eventId, onChange }) {
 
   if (loading) {
     return (
-      <p className="text-xs font-semibold uppercase tracking-wide text-[#8A8578] py-4">
-        Loading bookings...
-      </p>
+      <div aria-busy="true" className="py-4 space-y-3">
+        <SkeletonBlock className="h-4 w-1/2" />
+        <SkeletonBlock className="h-4 w-2/5" />
+      </div>
     );
   }
   if (bookings.length === 0) {
@@ -183,11 +185,7 @@ function Host() {
       />
 
       <div className="px-6 sm:px-8 lg:px-10 xl:px-14 py-8 pb-16">
-        {loading && (
-          <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center">
-            Loading your events...
-          </p>
-        )}
+        {loading && <ListSkeleton rows={2} withImage />}
         {!loading && error && (
           <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center text-[#E8491D]">
             {error}

@@ -8,7 +8,7 @@ import {
   registerSchema,
 } from "../validations/schema";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import useUserStore from "../stores/userStore";
@@ -27,7 +27,7 @@ function Login() {
   const {
     register: registerLogin,
     handleSubmit: handleSubmitLogin,
-    formState: { errors: loginErrors },
+    formState: { errors: loginErrors, isSubmitting: loginSubmitting },
     reset: resetLogin,
   } = useForm({
     resolver: zodResolver(loginSchema),
@@ -52,7 +52,7 @@ function Login() {
   const {
     register: registerRegister,
     handleSubmit: handleSubmitRegister,
-    formState: { errors: registerErrors },
+    formState: { errors: registerErrors, isSubmitting: registerSubmitting },
     reset: resetRegister,
   } = useForm({
     resolver: zodResolver(registerSchema),
@@ -264,9 +264,17 @@ function Login() {
 
                   <button
                     type="submit"
-                    className="w-full bg-[#E8491D] text-white border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-[#c73e17] transition-colors"
+                    disabled={loginSubmitting}
+                    className="w-full flex items-center justify-center gap-2 bg-[#E8491D] text-white border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-[#c73e17] transition-colors disabled:opacity-70 disabled:cursor-wait"
                   >
-                    Sign In
+                    {loginSubmitting && (
+                      <Loader2
+                        size={16}
+                        strokeWidth={2.5}
+                        className="animate-spin"
+                      />
+                    )}
+                    {loginSubmitting ? "Signing in..." : "Sign In"}
                   </button>
 
                   <p className="text-center text-xs mt-6">
@@ -436,9 +444,19 @@ function Login() {
 
                   <button
                     type="submit"
-                    className="w-full bg-[#E8491D] text-white border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-[#c73e17] transition-colors"
+                    disabled={registerSubmitting}
+                    className="w-full flex items-center justify-center gap-2 bg-[#E8491D] text-white border border-[#1A1A1A] font-extrabold text-[13px] tracking-wider uppercase py-4 hover:bg-[#c73e17] transition-colors disabled:opacity-70 disabled:cursor-wait"
                   >
-                    Create Account
+                    {registerSubmitting && (
+                      <Loader2
+                        size={16}
+                        strokeWidth={2.5}
+                        className="animate-spin"
+                      />
+                    )}
+                    {registerSubmitting
+                      ? "Creating account..."
+                      : "Create Account"}
                   </button>
                   <p className="text-center text-xs mt-6">
                     Already registered?{" "}
