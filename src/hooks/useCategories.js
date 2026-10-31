@@ -28,6 +28,9 @@ const useCategoryStore = create((set, get) => ({
   },
 }));
 
+// เรียกตอนเปิดแอป เพื่อปลุก server ให้ตื่นตั้งแต่เนิ่น ๆ (และได้รายการหมวดไว้ใช้เลย)
+export const preloadCategories = () => useCategoryStore.getState().load();
+
 // เรียกหลัง admin เพิ่ม / แก้ชื่อ / ลบหมวด เพื่อล้าง cache แล้วโหลดรายการใหม่
 export const invalidateCategories = () => {
   useCategoryStore.setState({ loaded: false, request: null });

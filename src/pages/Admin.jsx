@@ -4,6 +4,7 @@ import { Navigate, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import { mainApi } from "../api/mainApi";
 import PageHeader from "../components/PageHeader";
+import { ListSkeleton } from "../components/Skeleton";
 import { invalidateCategories } from "../hooks/useCategories";
 import useUserStore from "../stores/userStore";
 import {
@@ -168,7 +169,7 @@ function UsersTab() {
       </div>
 
       {loading ? (
-        <p className={emptyClass}>Loading users...</p>
+        <ListSkeleton rows={5} />
       ) : users.length === 0 ? (
         <p className={emptyClass}>No users found.</p>
       ) : (
@@ -313,7 +314,7 @@ function BookingsTab() {
       </div>
 
       {loading ? (
-        <p className={emptyClass}>Loading bookings...</p>
+        <ListSkeleton rows={5} />
       ) : bookings.length === 0 ? (
         <p className={emptyClass}>No bookings found.</p>
       ) : (
@@ -498,7 +499,7 @@ function CategoriesTab() {
       </form>
 
       {loading ? (
-        <p className={emptyClass}>Loading categories...</p>
+        <ListSkeleton rows={4} />
       ) : categories.length === 0 ? (
         <p className={emptyClass}>No categories yet.</p>
       ) : (

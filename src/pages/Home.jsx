@@ -5,6 +5,7 @@ import { ArrowRight, Search, X } from "lucide-react";
 import { mainApi } from "../api/mainApi";
 import BookingModal from "../components/BookingModal";
 import SeatsBar from "../components/SeatsBar";
+import { EventGridSkeleton } from "../components/Skeleton";
 import useCategories from "../hooks/useCategories";
 import { FALLBACK_IMAGE, formatDate, getErrorMessage } from "../utils/event";
 
@@ -148,11 +149,7 @@ function Home() {
 
       {/* Event grid */}
       <div className="px-6 sm:px-8 lg:px-10 xl:px-14 pb-16 lg:pb-20">
-        {loading && (
-          <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center">
-            Loading events...
-          </p>
-        )}
+        {loading && <EventGridSkeleton />}
 
         {!loading && error && (
           <p className="text-sm font-semibold uppercase tracking-wide py-10 text-center text-[#E8491D]">
